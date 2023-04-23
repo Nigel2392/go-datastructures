@@ -8,12 +8,14 @@ import (
 	"github.com/Nigel2392/go-datastructures"
 )
 
+// A binary search tree implementation which works with any type that implements the Comparable[T] interface.
 type InterfacedBST[T datastructures.Comparable[T]] struct {
 	root   *IF_BSTNode[T]
 	len    int
 	height int
 }
 
+// Return the binary search tree as a string.
 func (t *InterfacedBST[T]) String() string {
 	if t.root == nil {
 		return ""
@@ -50,11 +52,13 @@ func (t *InterfacedBST[T]) String() string {
 	return b.String()
 }
 
+// Initialize a new binary search tree with the given initial value.
 func NewInterfaced[T datastructures.Comparable[T]](initial T) *InterfacedBST[T] {
 	return &InterfacedBST[T]{
 		root: &IF_BSTNode[T]{value: initial}}
 }
 
+// Insert a value into the binary search tree.
 func (t *InterfacedBST[T]) Insert(value T) (inserted bool) {
 	if t.root == nil {
 		t.root = &IF_BSTNode[T]{value: value}
@@ -68,6 +72,7 @@ func (t *InterfacedBST[T]) Insert(value T) (inserted bool) {
 	return inserted
 }
 
+// Search for, and return, a value in the binary search tree.
 func (t *InterfacedBST[T]) Search(value T) (v T, ok bool) {
 	if t.root == nil {
 		return
@@ -75,6 +80,7 @@ func (t *InterfacedBST[T]) Search(value T) (v T, ok bool) {
 	return t.root.search(value)
 }
 
+// Delete a value from the binary search tree.
 func (t *InterfacedBST[T]) Delete(value T) (deleted bool) {
 	if t.root == nil {
 		return false
@@ -86,6 +92,7 @@ func (t *InterfacedBST[T]) Delete(value T) (deleted bool) {
 	return deleted
 }
 
+// Delete all values from the binary search tree that match the given predicate.
 func (t *InterfacedBST[T]) DeleteIf(predicate func(T) bool) (deleted int) {
 	if t.root == nil {
 		return 0
@@ -95,6 +102,7 @@ func (t *InterfacedBST[T]) DeleteIf(predicate func(T) bool) (deleted int) {
 	return deleted
 }
 
+// Traverse the binary search tree in-order.
 func (t *InterfacedBST[T]) Traverse(f func(T)) {
 	if t.root == nil {
 		return
@@ -102,10 +110,12 @@ func (t *InterfacedBST[T]) Traverse(f func(T)) {
 	t.root.traverse(f)
 }
 
+// Return the number of values in the binary search tree.
 func (t *InterfacedBST[T]) Len() int {
 	return t.len
 }
 
+// Return the height of the binary search tree.
 func (t *InterfacedBST[T]) Height() int {
 	if t.root == nil {
 		return 0
@@ -113,6 +123,7 @@ func (t *InterfacedBST[T]) Height() int {
 	return t.root.getHeight()
 }
 
+// Clear the binary search tree.
 func (t *InterfacedBST[T]) Clear() {
 	t.root = nil
 	t.len = 0

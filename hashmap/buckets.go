@@ -77,6 +77,26 @@ func (b *bucket[T1, T2]) traverse(f func(k T1, v T2) bool) (continueLoop bool) {
 	return b.root.traverse(f)
 }
 
+func traverseTree[T1 datastructures.Hashable[T1], T2 any](node *bucketNode[T1, T2], f func(*bucketNode[T1, T2]) bool) (continueLoop bool) {
+	if node == nil {
+		return true
+	}
+
+	if !traverseTree(node.left, f) {
+		return false
+	}
+
+	if !f(node) {
+		return false
+	}
+
+	if !traverseTree(node.right, f) {
+		return false
+	}
+
+	return true
+}
+
 func (b *bucket[T1, T2]) len() int {
 	return b._len
 }

@@ -17,15 +17,11 @@ func (s stringHasher) Hash() uint64 {
 }
 
 func (s stringHasher) Equals(other stringHasher) bool {
-	return datastructures.FastStrCmp(s, other)
+	return s == other //datastructures.FastStrCmp(s, other)
 }
 
 func TestHashMap(t *testing.T) {
 	var (
-		sliceItems = [...]string{
-			"a", "b", "c", "d", "e", "f", "g", "ab", "bc",
-			"cd", "de", "ef", "fg", "sun", "sunny", "flower", "flow", "flight", "flights", "mango",
-		}
 		stringHasherKeys = [...]stringHasher{
 			"a", "b", "c", "d", "e", "f", "g", "ab", "bc",
 			"cd", "de", "ef", "fg", "sun", "sunny", "flower", "flow", "flight", "flights", "mango",
@@ -33,12 +29,12 @@ func TestHashMap(t *testing.T) {
 	)
 
 	var hashTable = hashmap.Map[stringHasher, string]()
-	for k, v := range stringHasherKeys {
-		hashTable.Set(v, string(sliceItems[k]))
+	for _, v := range stringHasherKeys {
+		hashTable.Set(v, string(v))
 	}
 
-	for k, v := range stringHasherKeys {
-		if val, ok := hashTable.Get(v); !ok || val != string(sliceItems[k]) {
+	for _, v := range stringHasherKeys {
+		if val, ok := hashTable.Get(v); !ok || val != string(v) {
 			t.Fatalf("key: %s, value: %s", v, val)
 		}
 	}
@@ -47,7 +43,7 @@ func TestHashMap(t *testing.T) {
 
 	for _, v := range stringHasherKeys {
 		if !hashTable.Delete(v) {
-			t.Fatalf("key: %s, value: %s", v, v)
+			t.Fatalf("couldn't delete key: %s, value: %s\n%#v", v, v, hashTable)
 		}
 	}
 
@@ -68,17 +64,17 @@ func TestHashMap(t *testing.T) {
 
 	t.Logf("%#v", hashTable)
 
-	for k, v := range stringHasherKeys {
-		hashTable.Set(v, string(sliceItems[k]))
+	for _, v := range stringHasherKeys {
+		hashTable.Set(v, string(v))
 	}
 
 	if hashTable.Len() != len(stringHasherKeys) {
 		t.Fatalf("Size: %d", hashTable.Len())
 	}
 
-	for k, v := range stringHasherKeys {
+	for _, v := range stringHasherKeys {
 		var val, found = hashTable.Pop(v)
-		if !found || val != string(sliceItems[k]) {
+		if !found || val != string(v) {
 			t.Fatalf("key: %s, value: %s", v, val)
 		}
 	}

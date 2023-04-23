@@ -99,8 +99,6 @@ func (l *Doubly[T]) Reset() {
 }
 
 // Remove a value from the list at a given index.
-//
-// This is O(n/2) time complexity.
 func (l *Doubly[T]) RemoveIndex(i int) bool {
 	if i < 0 || i >= l.len {
 		return false

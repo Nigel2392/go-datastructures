@@ -9,8 +9,6 @@ import (
 
 // A string builder implemented with a linked list.
 //
-// This allows for O(1) prepend and append operations.
-//
 // This is a wrapper around a linkedlist.Doubly[string].
 type StringBuilder struct {
 	linkedlist.Doubly[string]

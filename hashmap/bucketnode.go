@@ -1,6 +1,10 @@
 package hashmap
 
-import "github.com/Nigel2392/go-datastructures"
+import (
+	"fmt"
+
+	"github.com/Nigel2392/go-datastructures"
+)
 
 type keyNode[T1 datastructures.Hashable[T1], T2 any] struct {
 	_hash uint64
@@ -28,11 +32,37 @@ func (n *keyNode[T1, T2]) retrieve(other *keyNode[T1, T2]) (value T2, ok bool) {
 		return
 	}
 
-	if n.key.Equals(n.key) {
+	if n.key.Equals(other.key) {
 		return n.value, true
 	}
 
 	return n.next.retrieve(other)
+}
+
+func (n *keyNode[T1, T2]) delete(other *keyNode[T1, T2]) (newRoot *keyNode[T1, T2], deleted bool) {
+	if n == nil {
+		return nil, false
+	}
+
+	if n.key.Equals(other.key) {
+		return n.next, true
+	}
+
+	n.next, deleted = n.next.delete(other)
+	return n, deleted
+}
+
+func (n *keyNode[T1, T2]) pop(other *keyNode[T1, T2]) (newRoot *keyNode[T1, T2], value T2, ok bool) {
+	if n == nil {
+		return
+	}
+
+	if n.key.Equals(other.key) {
+		return n.next, n.value, true
+	}
+
+	n.next, value, ok = n.next.pop(other)
+	return n, value, ok
 }
 
 type bucketNode[T1 datastructures.Hashable[T1], T2 any] struct {
@@ -43,7 +73,14 @@ type bucketNode[T1 datastructures.Hashable[T1], T2 any] struct {
 }
 
 func (n *bucketNode[T1, T2]) insert(v *keyNode[T1, T2]) {
-	if n._hash < v._hash {
+	if n._hash == v._hash {
+		if n.next == nil {
+			n.next = v
+			return
+		}
+		n.next.insert(v)
+		return
+	} else if n._hash < v._hash {
 		if n.right == nil {
 			n.right = &bucketNode[T1, T2]{
 				_hash: v._hash,
@@ -64,13 +101,6 @@ func (n *bucketNode[T1, T2]) insert(v *keyNode[T1, T2]) {
 		}
 		return
 	}
-
-	if n.next == nil {
-		n.next = v
-		return
-	}
-
-	n.next.insert(v)
 }
 
 func (n *bucketNode[T1, T2]) retrieve(k *keyNode[T1, T2]) (value T2, ok bool) {
@@ -97,31 +127,50 @@ func (n *bucketNode[T1, T2]) delete(other *keyNode[T1, T2]) (newRoot *bucketNode
 	} else if other._hash > n._hash {
 		n.right, deleted = n.right.delete(other)
 	} else {
-		if n.next == nil {
-			goto checkMinNode
-		}
-		for next := n.next; next != nil; {
-			if next.key.Equals(other.key) {
-				n.next = next.next
-				deleted = true
-				return n, true
-			}
-			next = next.next
-		}
-
-	checkMinNode:
+		n.next, deleted = n.next.delete(other)
+	}
+	if n.next == nil {
+		fmt.Println("found, deleting node")
 		if n.left == nil {
 			return n.right, true
 		} else if n.right == nil {
 			return n.left, true
 		}
 
+		// find the min node in the right subtree
 		var minNode = n.right.findMin()
 		n._hash = minNode._hash
 		n.next = minNode.next
-		n.right, deleted = n.right.delete(n.right.next)
+		// delete the min node from the right subtree
+		n.right, deleted = n.right.deleteNode(minNode)
+	}
+	return n, deleted
+}
+
+// deleteNode deletes the node with the given hash
+func (n *bucketNode[T1, T2]) deleteNode(other *bucketNode[T1, T2]) (newRoot *bucketNode[T1, T2], deleted bool) {
+	if n == nil {
+		return nil, false
 	}
 
+	if other._hash < n._hash {
+		n.left, deleted = n.left.deleteNode(other)
+	} else if other._hash > n._hash {
+		n.right, deleted = n.right.deleteNode(other)
+	} else {
+		if n.left == nil {
+			return n.right, true
+		} else if n.right == nil {
+			return n.left, true
+		}
+
+		// find the min node in the right subtree
+		var minNode = n.right.findMin()
+		n._hash = minNode._hash
+		n.next = minNode.next
+		// delete the min node from the right subtree
+		n.right, deleted = n.right.deleteNode(minNode)
+	}
 	return n, deleted
 }
 
@@ -135,28 +184,21 @@ func (n *bucketNode[T1, T2]) pop(k *keyNode[T1, T2]) (newRoot *bucketNode[T1, T2
 	} else if k._hash > n._hash {
 		n.right, value, ok = n.right.pop(k)
 	} else {
+		n.next, value, ok = n.next.pop(k)
 		if n.next == nil {
-			goto checkMinNode
-		}
-		for next := n.next; next != nil; {
-			if next.key.Equals(k.key) {
-				n.next = next.next
-				return n, next.value, true
+			if n.left == nil {
+				return n.right, value, ok
+			} else if n.right == nil {
+				return n.left, value, ok
 			}
-			next = next.next
-		}
 
-	checkMinNode:
-		if n.left == nil {
-			return n.right, n.next.value, true
-		} else if n.right == nil {
-			return n.left, n.next.value, true
+			// find the min node in the right subtree
+			var minNode = n.right.findMin()
+			n._hash = minNode._hash
+			n.next = minNode.next
+			// delete the min node from the right subtree
+			n.right, _ = n.right.deleteNode(minNode)
 		}
-
-		var minNode = n.right.findMin()
-		n._hash = minNode._hash
-		n.next = minNode.next
-		n.right, value, ok = n.right.pop(n.right.next)
 	}
 
 	return n, value, ok

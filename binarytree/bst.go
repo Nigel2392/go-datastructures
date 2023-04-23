@@ -8,12 +8,14 @@ import (
 	"github.com/Nigel2392/go-datastructures"
 )
 
+// A binary search tree implementation.
 type BST[T datastructures.Ordered] struct {
 	root   *BSTNode[T]
 	len    int
 	height int
 }
 
+// Return the binary search tree as a string.
 func (t *BST[T]) String() string {
 	if t.root == nil {
 		return ""
@@ -50,11 +52,13 @@ func (t *BST[T]) String() string {
 	return b.String()
 }
 
+// Initialize a new binary search tree with the given initial value.
 func NewBST[T datastructures.Ordered](initial T) *BST[T] {
 	return &BST[T]{
 		root: &BSTNode[T]{value: initial}}
 }
 
+// Insert a new value into the binary search tree.
 func (t *BST[T]) Insert(value T) (inserted bool) {
 	if t.root == nil {
 		t.root = &BSTNode[T]{value: value}
@@ -68,6 +72,7 @@ func (t *BST[T]) Insert(value T) (inserted bool) {
 	return inserted
 }
 
+// Search for a value in the binary search tree.
 func (t *BST[T]) Search(value T) (v T, ok bool) {
 	if t.root == nil {
 		return
@@ -75,6 +80,7 @@ func (t *BST[T]) Search(value T) (v T, ok bool) {
 	return t.root.search(value)
 }
 
+// Delete a value from the binary search tree.
 func (t *BST[T]) Delete(value T) (deleted bool) {
 	if t.root == nil {
 		return false
@@ -86,6 +92,7 @@ func (t *BST[T]) Delete(value T) (deleted bool) {
 	return deleted
 }
 
+// Delete a value from the binary search tree if the predicate returns true.
 func (t *BST[T]) DeleteIf(predicate func(T) bool) (deleted int) {
 	if t.root == nil {
 		return 0
@@ -95,16 +102,20 @@ func (t *BST[T]) DeleteIf(predicate func(T) bool) (deleted int) {
 	return deleted
 }
 
+// Traverse the binary search tree in order.
 func (t *BST[T]) Traverse(f func(T)) {
 	if t.root == nil {
 		return
 	}
 	t.root.traverse(f)
 }
+
+// Return the number of values in the binary search tree.
 func (t *BST[T]) Len() int {
 	return t.len
 }
 
+// Return the height of the binary search tree.
 func (t *BST[T]) Height() int {
 	if t.root == nil {
 		return 0

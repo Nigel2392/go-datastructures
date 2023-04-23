@@ -15,8 +15,6 @@ type Stack[T any] linkedlist.Singly[T]
 // Push adds a value to the top of the stack
 //
 // This is the same as Prepend in a linked list
-//
-// This is O(1)
 func (s *Stack[T]) Push(value T) {
 	(*linkedlist.Singly[T])(s).Prepend(value)
 }
@@ -24,8 +22,6 @@ func (s *Stack[T]) Push(value T) {
 // Pop removes a value from the top of the stack
 //
 // This is the same as Shift in a linked list
-//
-// This is O(1)
 func (s *Stack[T]) Pop() T {
 	return (*linkedlist.Singly[T])(s).Shift()
 }

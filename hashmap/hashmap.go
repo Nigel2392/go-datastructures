@@ -83,17 +83,20 @@ func indexOf(hash uint64, buckets uint64) uint64 {
 	return (hash ^ (hash >> 16)) & (buckets - 1)
 }
 
+// Sets a value in the map.
 func (t *HashMap[T1, T2]) Set(k T1, v T2) {
 	var hash uint64 = k.Hash()
 	t.buckets[indexOf(hash, t.bucketLen)].insert(hash, k, v)
 	t.len++
 }
 
+// Gets a value from the map.
 func (t *HashMap[T1, T2]) Get(k T1) (v T2, ok bool) {
 	var hash uint64 = k.Hash()
 	return t.buckets[indexOf(hash, t.bucketLen)].retrieve(k)
 }
 
+// Deletes a value from the map.
 func (t *HashMap[T1, T2]) Delete(k T1) (ok bool) {
 	var hash uint64 = k.Hash()
 	ok = t.buckets[indexOf(hash, t.bucketLen)].delete(k)
@@ -103,10 +106,12 @@ func (t *HashMap[T1, T2]) Delete(k T1) (ok bool) {
 	return
 }
 
+// Returns the number of items in the map.
 func (t *HashMap[T1, T2]) Len() int {
 	return t.len
 }
 
+// Returns all of the keys in the map.
 func (t *HashMap[T1, T2]) Keys() []T1 {
 	var keys = make([]T1, t.len, t.len)
 	var i int
@@ -121,6 +126,7 @@ func (t *HashMap[T1, T2]) Keys() []T1 {
 	return keys
 }
 
+// Returns all of the values in the map.
 func (t *HashMap[T1, T2]) Values() []T2 {
 	var values = make([]T2, t.len, t.len)
 	var i int
@@ -134,6 +140,7 @@ func (t *HashMap[T1, T2]) Values() []T2 {
 	return values
 }
 
+// Clear the map.
 func (t *HashMap[T1, T2]) Clear() {
 	for i := range t.buckets {
 		t.buckets[i] = &bucket[T1, T2]{}
@@ -141,6 +148,7 @@ func (t *HashMap[T1, T2]) Clear() {
 	t.len = 0
 }
 
+// Range over the map.
 func (t *HashMap[T1, T2]) Range(f func(k T1, v T2) (continueLoop bool)) {
 	for _, bucket := range t.buckets {
 		if !bucket.traverse(f) {
@@ -149,6 +157,9 @@ func (t *HashMap[T1, T2]) Range(f func(k T1, v T2) (continueLoop bool)) {
 	}
 }
 
+// Pop a value from the map.
+//
+// Returns the value and a boolean indicating whether the value was found.
 func (t *HashMap[T1, T2]) Pop(k T1) (v T2, ok bool) {
 	var hash uint64 = k.Hash()
 	v, ok = t.buckets[indexOf(hash, t.bucketLen)].pop(k)
@@ -158,6 +169,7 @@ func (t *HashMap[T1, T2]) Pop(k T1) (v T2, ok bool) {
 	return
 }
 
+// Returns a string representation of the map.
 func (t *HashMap[T1, T2]) String() string {
 	var b strings.Builder
 	b.WriteString("{")
@@ -174,29 +186,46 @@ func (t *HashMap[T1, T2]) String() string {
 	return b.String()
 }
 
+// Returns the GoString representation of the map.
+//
+// Because we allow you to define your own hashing, and comparison functions
+// we allow you to see every bit of the insides of the map for debugging purposes.
 func (t *HashMap[T1, T2]) GoString() string {
 	var b strings.Builder
 	b.WriteString("Map[T1, T2]{")
 	for j, bucket := range t.buckets {
-		var i int
-		b.WriteString("\n\tBucket{")
-		b.WriteString(fmt.Sprintf("index: %d", j))
-		b.WriteString(", bucketLen: ")
-		b.WriteString(strconv.FormatInt(int64(bucket._len), 10))
-		b.WriteString(", items: ")
-		b.WriteString("[")
-		bucket.traverse(func(k T1, v T2) bool {
-			b.WriteString(fmt.Sprintf("%v:%v", k, v))
-			if i < bucket._len-1 {
+		if bucket._len == 0 {
+			b.WriteString(fmt.Sprintf("\n\tBucket{index: %d, bucketLen: %d, items: []}", j, bucket._len))
+			if j < len(t.buckets)-1 {
 				b.WriteString(", ")
 			}
-			i++
-			return true
-		})
-		b.WriteString("]")
-		b.WriteString("}")
-		if j < len(t.buckets)-1 {
-			b.WriteString(", ")
+		} else {
+			b.WriteString("\n\tBucket{")
+			b.WriteString(fmt.Sprintf("\n\t\tindex: %d", j))
+			b.WriteString("\n\t\tbucketLen: ")
+			b.WriteString(strconv.FormatInt(int64(bucket._len), 10))
+			b.WriteString("\n\t\titems: [")
+			var o int
+			traverseTree(bucket.root, func(n *bucketNode[T1, T2]) bool {
+				b.WriteString("\n\t\t\tbucketNode: {")
+				b.WriteString(fmt.Sprintf("\n\t\t\thash: %d", n._hash))
+				b.WriteString("\n\t\t\t\tnodes: [")
+				for next := n.next; next != nil; next = next.next {
+					b.WriteString(fmt.Sprintf("%v:%v", next.key, next.value))
+					if next.next != nil {
+						b.WriteString(" > ")
+					}
+				}
+				b.WriteString("]\n\t\t\t}")
+				return true
+			})
+			if o > 0 {
+				b.WriteString("\n\t\t")
+			}
+			b.WriteString("]\n\t}")
+			if j < len(t.buckets)-1 {
+				b.WriteString(", ")
+			}
 		}
 	}
 	b.WriteString("\n}")
