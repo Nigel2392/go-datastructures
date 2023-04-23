@@ -27,10 +27,9 @@ func (n *IF_BSTNode[T]) insert(v T) (inserted bool) {
 		} else {
 			return n.left.insert(v)
 		}
+	} else if n.value.Equals(v) {
+		n.value = v
 	}
-
-	n.value = v
-
 	return false
 }
 
@@ -39,16 +38,16 @@ func (n *IF_BSTNode[T]) search(value T) (v T, ok bool) {
 	if n == nil {
 		return
 	}
-
 	// check if we need to traverse further down the tree
 	if n.value.Lt(value) {
 		return n.right.search(value)
 	} else if n.value.Gt(value) {
 		return n.left.search(value)
+	} else if n.value.Equals(value) {
+		// value is not less than or greater than, so it must be equal
+		return n.value, true
 	}
-
-	// value is not less than or greater than, so it must be equal
-	return n.value, true
+	return
 }
 
 func (n *IF_BSTNode[T]) traverse(f func(T)) {
@@ -70,7 +69,7 @@ func (n *IF_BSTNode[T]) delete(v T) (newRoot *IF_BSTNode[T], deleted bool) {
 		n.left, deleted = n.left.delete(v)
 	} else if v.Gt(n.value) {
 		n.right, deleted = n.right.delete(v)
-	} else {
+	} else if v.Equals(n.value) {
 		deleted = true
 		if n.left == nil {
 			return n.right, deleted
