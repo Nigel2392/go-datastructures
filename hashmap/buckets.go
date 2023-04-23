@@ -56,6 +56,19 @@ func (b *bucket[T1, T2]) delete(k T1) (ok bool) {
 	return ok
 }
 
+func (b *bucket[T1, T2]) deleteIf(predicate func(k T1, v T2) bool) (amountDeleted int) {
+	if b.root == nil {
+		return
+	}
+
+	var newRoot *bucketNode[T1, T2]
+
+	newRoot, amountDeleted = b.root.deleteIf(predicate)
+	b.root = newRoot
+	b._len -= amountDeleted
+	return
+}
+
 func (b *bucket[T1, T2]) pop(k T1) (v T2, ok bool) {
 	if b.root == nil {
 		return

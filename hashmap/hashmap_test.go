@@ -84,6 +84,41 @@ func TestHashMap(t *testing.T) {
 	}
 
 	t.Logf("%#v", hashTable)
+
+	for _, v := range stringHasherKeys {
+		hashTable.Set(v, string(v))
+	}
+
+	if hashTable.Len() != len(stringHasherKeys) {
+		t.Fatalf("Size: %d", hashTable.Len())
+	}
+
+	hashTable.Clear()
+
+	if hashTable.Len() != 0 {
+		t.Fatalf("Size: %d after clear", hashTable.Len())
+	}
+
+	t.Logf("%#v", hashTable)
+
+	for _, v := range stringHasherKeys {
+		hashTable.Set(v, string(v))
+	}
+
+	if hashTable.Len() != len(stringHasherKeys) {
+		t.Fatalf("Size: %d after set", hashTable.Len())
+	}
+
+	hashTable.DeleteIf(func(key stringHasher, value string) bool {
+		return true
+	})
+
+	if hashTable.Len() != 0 {
+		t.Fatalf("Size after DeleteIf: %d", hashTable.Len())
+	}
+
+	t.Logf("%#v", hashTable)
+
 }
 
 var (

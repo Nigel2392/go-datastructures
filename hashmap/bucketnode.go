@@ -1,8 +1,6 @@
 package hashmap
 
 import (
-	"fmt"
-
 	"github.com/Nigel2392/go-datastructures"
 )
 
@@ -63,6 +61,20 @@ func (n *keyNode[T1, T2]) pop(other *keyNode[T1, T2]) (newRoot *keyNode[T1, T2],
 
 	n.next, value, ok = n.next.pop(other)
 	return n, value, ok
+}
+
+func (n *keyNode[T1, T2]) deleteIf(predicate func(k T1, v T2) bool) (newRoot *keyNode[T1, T2], amountDeleted int) {
+	if n == nil {
+		return
+	}
+
+	if predicate(n.key, n.value) {
+		newRoot, amountDeleted = n.next.deleteIf(predicate)
+		return newRoot, amountDeleted + 1
+	}
+
+	n.next, amountDeleted = n.next.deleteIf(predicate)
+	return n, amountDeleted
 }
 
 type bucketNode[T1 datastructures.Hashable[T1], T2 any] struct {
@@ -130,7 +142,6 @@ func (n *bucketNode[T1, T2]) delete(other *keyNode[T1, T2]) (newRoot *bucketNode
 		n.next, deleted = n.next.delete(other)
 	}
 	if n.next == nil {
-		fmt.Println("found, deleting node")
 		if n.left == nil {
 			return n.right, true
 		} else if n.right == nil {
@@ -145,6 +156,20 @@ func (n *bucketNode[T1, T2]) delete(other *keyNode[T1, T2]) (newRoot *bucketNode
 		n.right, deleted = n.right.deleteNode(minNode)
 	}
 	return n, deleted
+}
+
+func (n *bucketNode[T1, T2]) deleteIf(predicate func(T1, T2) bool) (newRoot *bucketNode[T1, T2], amountDeleted int) {
+	if n == nil {
+		return nil, 0
+	}
+	var deleted int
+	n.left, deleted = n.left.deleteIf(predicate)
+	amountDeleted += deleted
+	n.right, deleted = n.right.deleteIf(predicate)
+	amountDeleted += deleted
+	n.next, deleted = n.next.deleteIf(predicate)
+	amountDeleted += deleted
+	return n, amountDeleted
 }
 
 // deleteNode deletes the node with the given hash

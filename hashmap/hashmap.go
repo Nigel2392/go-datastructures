@@ -106,6 +106,19 @@ func (t *HashMap[T1, T2]) Delete(k T1) (ok bool) {
 	return
 }
 
+// Deletes a value from the map if the predicate returns true.
+func (t *HashMap[T1, T2]) DeleteIf(p func(T1, T2) bool) (amountDeleted int) {
+	var deleted int
+
+	for _, bucket := range t.buckets {
+		deleted = bucket.deleteIf(p)
+		amountDeleted += deleted
+	}
+
+	t.len -= amountDeleted
+	return
+}
+
 // Returns the number of items in the map.
 func (t *HashMap[T1, T2]) Len() int {
 	return t.len
