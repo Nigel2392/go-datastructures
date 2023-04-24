@@ -25,3 +25,26 @@ func (s *Stack[T]) Push(value T) {
 func (s *Stack[T]) Pop() T {
 	return (*linkedlist.Singly[T])(s).Shift()
 }
+
+// PopOK removes a value from the top of the stack
+//
+// This is the same as Shift in a linked list
+//
+// It returns the value and a boolean indicating whether the value was removed
+func (s *Stack[T]) PopOK() (value T, ok bool) {
+	if s.Len() == 0 {
+		return
+	}
+	return (*linkedlist.Singly[T])(s).Shift(), true
+}
+
+// Peek returns the value at the top of the stack
+//
+// This is the same as Head in a linked list
+func (s *Stack[T]) Peek() T {
+	return (*linkedlist.Singly[T])(s).Head().Value()
+}
+
+func (s *Stack[T]) Len() int {
+	return (*linkedlist.Singly[T])(s).Len()
+}
