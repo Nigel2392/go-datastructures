@@ -46,7 +46,8 @@ func (l *Singly[T]) Head() *Node[T] {
 
 // Prepend a value to the beginning of the list.
 func (l *Singly[T]) Prepend(v T) {
-	l.prepend(&Node[T]{value: v})
+	var n = &Node[T]{value: v}
+	l.prepend(n)
 }
 
 // Shift a value from the beginning of the list.

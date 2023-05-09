@@ -2,12 +2,12 @@ package datastructures
 
 import "unsafe"
 
-// Taken from https://github.com/golang/go/blob/master/src/runtime/map_faststr.go
+// Inspiration from https://github.com/golang/go/blob/master/src/runtime/map_faststr.go
 //
 //go:linkname memequal runtime.memequal
 func memequal(a, b unsafe.Pointer, n uintptr) bool
 
-// Taken from https://github.com/golang/go/blob/master/src/runtime/map_faststr.go
+// Inspiration from https://github.com/golang/go/blob/master/src/runtime/map_faststr.go
 type _string struct {
 	str unsafe.Pointer
 	len int

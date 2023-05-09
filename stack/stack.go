@@ -1,6 +1,7 @@
 package stack
 
 import (
+	"sync"
 	"time"
 
 	"github.com/Nigel2392/go-datastructures/linkedlist"
@@ -42,14 +43,37 @@ func (s *Stack[T]) PopOK() (value T, ok bool) {
 	return (*linkedlist.Singly[T])(s).Shift(), true
 }
 
-// PopOKWaiter returns a channel where the value will be sent when it is available
-//
-// This is the same as ShiftWaiter in a linked list
-func (s *Stack[T]) PopOKWaiter(deadline time.Duration) (ret <-chan T, ok <-chan time.Time) {
+// PopWaiter allows you to wait on a value through a channel.
+func (s *Stack[T]) PopWaiter(sleep time.Duration) <-chan T {
+	var c = make(chan T, 1)
+	var mu = new(sync.Mutex)
+	go func(mut *sync.Mutex) {
+		for {
+			if s.Len() > 0 {
+				mut.Lock() // Only lock when we know there is a value
+				defer mut.Unlock()
+				// Check again to make sure it wasn't removed
+				if s.Len() <= 0 {
+					continue
+				}
+				c <- (*linkedlist.Singly[T])(s).Shift()
+				return
+			}
+			if sleep > 0 {
+				time.Sleep(sleep)
+			}
+		}
+	}(mu)
+
+	return c
+}
+
+// PopOKDeadline returns a channel where the value will be sent when it is available
+func (s *Stack[T]) PopOKDeadline(deadline time.Duration) (ret <-chan T, ok <-chan time.Time) {
 	var deadlineWaiter = time.After(deadline)
 	var c = make(chan T, 1)
-
-	go func() {
+	var mu = new(sync.Mutex)
+	go func(mut *sync.Mutex) {
 		for {
 			select {
 			case <-deadlineWaiter:
@@ -57,13 +81,17 @@ func (s *Stack[T]) PopOKWaiter(deadline time.Duration) (ret <-chan T, ok <-chan 
 				return
 			default:
 				if s.Len() > 0 {
-					c <- (*linkedlist.Singly[T])(s).Shift()
-					close(c)
-					return
+					mut.Lock()
+					defer mut.Unlock()
+					if s.Len() > 0 {
+						c <- (*linkedlist.Singly[T])(s).Shift()
+						close(c)
+						return
+					}
 				}
 			}
 		}
-	}()
+	}(mu)
 
 	return c, deadlineWaiter
 

@@ -1,3 +1,6 @@
 {
-    "workbench.colorTheme": "2077"
+    "workbench.colorTheme": "2077",
+    "go.toolsEnvVars": {
+        "GOEXPERIMENT": "arenas",
+    }
 }
