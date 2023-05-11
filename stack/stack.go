@@ -47,25 +47,28 @@ func (s *Stack[T]) PopOK() (value T, ok bool) {
 func (s *Stack[T]) PopWaiter(sleep time.Duration) <-chan T {
 	var c = make(chan T, 1)
 	var mu = new(sync.Mutex)
-	go func(mut *sync.Mutex) {
-		for {
-			if s.Len() > 0 {
-				mut.Lock() // Only lock when we know there is a value
-				defer mut.Unlock()
-				// Check again to make sure it wasn't removed
-				if s.Len() <= 0 {
-					continue
-				}
-				c <- (*linkedlist.Singly[T])(s).Shift()
-				return
-			}
-			if sleep > 0 {
-				time.Sleep(sleep)
-			}
-		}
-	}(mu)
-
+	go s.wait(mu, c, sleep)
 	return c
+}
+
+func (s *Stack[T]) wait(mu *sync.Mutex, c chan<- T, sleep time.Duration) {
+	for {
+		if s.Len() > 0 {
+			mu.Lock()
+			// Check again to make sure it wasn't removed
+			if s.Len() <= 0 {
+				mu.Unlock()
+				continue
+			}
+			c <- (*linkedlist.Singly[T])(s).Shift()
+			close(c)
+			mu.Unlock()
+			return
+		}
+		if sleep > 0 {
+			time.Sleep(sleep)
+		}
+	}
 }
 
 // PopOKDeadline returns a channel where the value will be sent when it is available
