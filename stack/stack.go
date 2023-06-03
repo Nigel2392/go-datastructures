@@ -103,8 +103,12 @@ func (s *Stack[T]) PopOKDeadline(deadline time.Duration) (ret <-chan T, ok <-cha
 // Peek returns the value at the top of the stack
 //
 // This is the same as Head in a linked list
-func (s *Stack[T]) Peek() T {
-	return (*linkedlist.Singly[T])(s).Head().Value()
+func (s *Stack[T]) Peek() (value T) {
+	var head = (*linkedlist.Singly[T])(s).Head()
+	if head == nil {
+		return // value is zero value
+	}
+	return head.Value()
 }
 
 func (s *Stack[T]) Len() int {
