@@ -111,6 +111,22 @@ func (l *Singly[T]) RemoveIndex(i int) bool {
 	return false
 }
 
+// Remove a value from the list if the predicate returns true.
+//
+// Returns the number of values removed.
+func (l *Singly[T]) RemoveIf(predicate func(T) bool) int {
+	var removed = 0
+	var i = 0
+	for n := l.head; n != nil; n = n.next {
+		if predicate(n.value) {
+			l.remove(i, n)
+			removed++
+		}
+		i++
+	}
+	return removed
+}
+
 // Returns the list as a slice.
 func (l *Singly[T]) ToSlice() []T {
 	if l.len == 0 {
