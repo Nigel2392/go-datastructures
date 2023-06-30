@@ -51,22 +51,6 @@ func (n *IF_BSTNode[T]) search(value T) (v T, ok bool) {
 	return
 }
 
-// sortedArrayToBST function
-func sortedArrayToBST[T datastructures.Comparable](nums []int) *TreeNode {
-	return constructBSTFromSortedArray[T](nums, 0, len(nums))
-}
-
-func constructBSTFromSortedArray[T datastructures.Comparable](nums []int, start, end int) *IF_BSTNode[T] {
-	if start == end {
-		return nil
-	}
-	mid := start + (end-start)/2
-	return &IF_BSTNode[T]{
-		val:   nums[mid],
-		left:  constructBSTFromSortedArray(nums, start, mid),
-		right: constructBSTFromSortedArray(nums, mid+1, end),
-	}
-}
 func (n *IF_BSTNode[T]) traverse(f func(T)) {
 	if n == nil {
 		return
