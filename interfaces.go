@@ -17,7 +17,5 @@ type Equalizer[T any] interface {
 }
 
 type Comparable[T any] interface {
-	Equalizer[T]
 	Lt(T) bool
-	Gt(T) bool
 }

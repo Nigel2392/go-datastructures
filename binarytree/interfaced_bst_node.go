@@ -13,6 +13,7 @@ func (n *IF_BSTNode[T]) Value() T {
 }
 
 func (n *IF_BSTNode[T]) insert(v T) (inserted bool) {
+	// Equals
 	if n.value.Lt(v) {
 		if n.right == nil {
 			n.right = &IF_BSTNode[T]{value: v}
@@ -20,14 +21,14 @@ func (n *IF_BSTNode[T]) insert(v T) (inserted bool) {
 		} else {
 			return n.right.insert(v)
 		}
-	} else if n.value.Gt(v) {
+	} else if v.Lt(n.value) { // Gt(
 		if n.left == nil {
 			n.left = &IF_BSTNode[T]{value: v}
 			return true
 		} else {
 			return n.left.insert(v)
 		}
-	} else if n.value.Equals(v) {
+	} else if !n.value.Lt(v) && !v.Lt(n.value) {
 		n.value = v
 	}
 	return false
@@ -41,9 +42,9 @@ func (n *IF_BSTNode[T]) search(value T) (v T, ok bool) {
 	// check if we need to traverse further down the tree
 	if n.value.Lt(value) {
 		return n.right.search(value)
-	} else if n.value.Gt(value) {
+	} else if value.Lt(n.value) {
 		return n.left.search(value)
-	} else if n.value.Equals(value) {
+	} else if !n.value.Lt(value) && !value.Lt(n.value) {
 		// value is not less than or greater than, so it must be equal
 		return n.value, true
 	}
@@ -65,11 +66,11 @@ func (n *IF_BSTNode[T]) delete(v T) (newRoot *IF_BSTNode[T], deleted bool) {
 		return nil, false
 	}
 
-	if v.Lt(n.value) {
-		n.left, deleted = n.left.delete(v)
-	} else if v.Gt(n.value) {
+	if n.value.Lt(v) {
 		n.right, deleted = n.right.delete(v)
-	} else if v.Equals(n.value) {
+	} else if v.Lt(n.value) {
+		n.left, deleted = n.left.delete(v)
+	} else if !n.value.Lt(v) && !v.Lt(n.value) {
 		deleted = true
 		if n.left == nil {
 			return n.right, deleted
@@ -82,7 +83,6 @@ func (n *IF_BSTNode[T]) delete(v T) (newRoot *IF_BSTNode[T], deleted bool) {
 		minRight.left = n.left
 		return minRight, deleted
 	}
-
 	return n, deleted
 }
 
