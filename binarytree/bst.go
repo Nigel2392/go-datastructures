@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Nigel2392/go-datastructures"
+	"golang.org/x/exp/slices"
 )
 
 // A binary search tree implementation.
@@ -131,4 +132,25 @@ func fillBSTNodes[T datastructures.Ordered](BSTNodes [][]string, n *BSTNode[T], 
 	BSTNodes[depth] = append(BSTNodes[depth], fmt.Sprintf("%v", n.value))
 	fillBSTNodes(BSTNodes, n.left, depth+1)
 	fillBSTNodes(BSTNodes, n.right, depth+1)
+}
+
+func SliceToBST[T datastructures.Ordered](items []T, sorted bool) *BST[T] {
+	if !sorted {
+		slices.Sort(items)
+	}
+	var bst BST[T]
+	bst.root = constructBSTFromSortedSlice(items, 0, len(items))
+	return &bst
+}
+
+func constructBSTFromSortedSlice[T datastructures.Ordered](items []T, start, end int) *BSTNode[T] {
+	if start == end {
+		return nil
+	}
+	mid := start + (end-start)/2
+	return &BSTNode[T]{
+		value: items[mid],
+		left:  constructBSTFromSortedSlice(items, start, mid),
+		right: constructBSTFromSortedSlice(items, mid+1, end),
+	}
 }

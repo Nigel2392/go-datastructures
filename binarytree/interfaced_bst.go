@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Nigel2392/go-datastructures"
+	"golang.org/x/exp/slices"
 )
 
 // A binary search tree implementation which works with any type that implements the Comparable[T] interface.
@@ -137,4 +138,28 @@ func fillIF_BSTNodes[T datastructures.Comparable[T]](IF_BSTNodes [][]string, n *
 	IF_BSTNodes[depth] = append(IF_BSTNodes[depth], fmt.Sprintf("%v", n.value))
 	fillIF_BSTNodes(IF_BSTNodes, n.left, depth+1)
 	fillIF_BSTNodes(IF_BSTNodes, n.right, depth+1)
+}
+
+// Create a new binary search tree from an array.
+func SliceToInterfacedBST[T datastructures.Comparable[T]](items []T, sorted bool) *InterfacedBST[T] {
+	if !sorted {
+		slices.SortFunc[T](items, func(i, j T) bool {
+			return i.Lt(j)
+		})
+	}
+	var bst InterfacedBST[T]
+	bst.root = constructInterfacedBSTFromSortedSlice(items, 0, len(items))
+	return &bst
+}
+
+func constructInterfacedBSTFromSortedSlice[T datastructures.Comparable[T]](items []T, start, end int) *IF_BSTNode[T] {
+	if start == end {
+		return nil
+	}
+	mid := start + (end-start)/2
+	return &IF_BSTNode[T]{
+		value: items[mid],
+		left:  constructInterfacedBSTFromSortedSlice(items, start, mid),
+		right: constructInterfacedBSTFromSortedSlice(items, mid+1, end),
+	}
 }
