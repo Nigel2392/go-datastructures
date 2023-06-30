@@ -163,6 +163,21 @@ func (l *Doubly[T]) RemoveIf(predicate func(T) bool) int {
 	return removed
 }
 
+// Remove a single value from the list.
+//
+// Returns true if the value was removed.
+func (l *Doubly[T]) Remove(predicate func(value T) bool) bool {
+	var i = 0
+	for n := l.head; n != nil; n = n.next {
+		if predicate(n.value) {
+			l.remove(i, n)
+			return true
+		}
+		i++
+	}
+	return false
+}
+
 // MarshalJSON implements the json.Marshaler interface.
 func (l *Doubly[T]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(l.ToSlice())
